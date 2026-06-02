@@ -3,8 +3,6 @@
 const fs = require("fs");
 const path = require("path");
 
-const ROWS = 4;
-const COLS = 4;
 const PIECE_SIZE = 4;
 const DIGITS = ["1", "2", "3", "4"];
 const SEQUENCES = buildNonDecreasingSequences(DIGITS, PIECE_SIZE);
@@ -12,11 +10,10 @@ const RUNS = Number(process.argv[2] || 10);
 const SUMMARY_ONLY = process.argv.includes("--summary");
 const ACCEPTED_ONLY = process.argv.includes("--accepted-only");
 const MAX_ALLOWED_SOLUTIONS = 2;
-const tilingsPath = path.join(__dirname, "..", "data", "tetromino-tilings-4x4.txt");
-const tilings = fs.readFileSync(tilingsPath, "utf8")
-  .split("\n")
-  .map((line) => line.trim())
-  .filter(Boolean);
+const SIZE = readSizeArg();
+const ROWS = SIZE.rows;
+const COLS = SIZE.cols;
+const tilings = loadTilings(ROWS, COLS);
 
 const counts = [];
 
@@ -47,6 +44,8 @@ if (SUMMARY_ONLY) {
     histogram.set(count, (histogram.get(count) || 0) + 1);
   });
 
+  console.log(`size=${ROWS}x${COLS}`);
+  console.log(`tilings=${tilings.length}`);
   console.log(`runs=${RUNS}`);
   console.log(`min=${sortedCounts[0]}`);
   console.log(`median=${sortedCounts[Math.floor(sortedCounts.length / 2)]}`);
@@ -179,4 +178,54 @@ function randomItem(items) {
 
 function mean(values) {
   return values.reduce((total, value) => total + value, 0) / values.length;
+}
+
+function readSizeArg() {
+  const sizeFlagIndex = process.argv.indexOf("--size");
+  const sizeText = sizeFlagIndex === -1 ? "4x4" : process.argv[sizeFlagIndex + 1];
+  const match = /^(\d+)x(\d+)$/i.exec(sizeText || "");
+
+  if (!match) {
+    throw new Error("Expected --size in RxC format, for example --size 4x5.");
+  }
+
+  const rows = Number(match[1]);
+  const cols = Number(match[2]);
+
+  if (rows * cols % PIECE_SIZE !== 0) {
+    throw new Error(`Board size ${sizeText} is not divisible into tetrominoes.`);
+  }
+
+  return { rows, cols };
+}
+
+function loadTilings(rows, cols) {
+  const canonicalRows = Math.min(rows, cols);
+  const canonicalCols = Math.max(rows, cols);
+  const tilingsPath = path.join(
+    __dirname,
+    "..",
+    "data",
+    `tetromino-tilings-${canonicalRows}x${canonicalCols}.txt`
+  );
+  const loadedTilings = fs.readFileSync(tilingsPath, "utf8")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  return rows <= cols
+    ? loadedTilings
+    : loadedTilings.map((tiling) => transposeTiling(tiling, canonicalRows, canonicalCols));
+}
+
+function transposeTiling(tiling, rows, cols) {
+  const transposed = Array.from({ length: tiling.length });
+
+  [...tiling].forEach((label, index) => {
+    const row = Math.floor(index / cols);
+    const col = index % cols;
+    transposed[col * rows + row] = label;
+  });
+
+  return transposed.join("");
 }

@@ -1,0 +1,94 @@
+Countile Solution Counting Experiments
+======================================
+
+Experiment date: 2026-06-02
+
+Purpose
+-------
+
+Estimate how many valid tetromino tiling solutions random generated boards have
+for the 4x5, 5x4, 4x6, and 6x4 board sizes.
+
+Method
+------
+
+For each board size:
+
+1. Load the corresponding tetromino tiling list from data/.
+2. For transposed sizes, use the canonical tiling file and transpose each tiling:
+   - 5x4 uses data/tetromino-tilings-4x5.txt
+   - 6x4 uses data/tetromino-tilings-4x6.txt
+3. Generate 200 random boards.
+4. Each board is generated from one random tiling.
+5. Each tetromino receives one uniformly chosen non-decreasing sequence from
+   digits 1-4.
+6. Count how many tilings from the relevant tiling list are valid solutions for
+   that board.
+
+Commands
+--------
+
+node scripts/count-solutions.js 200 --summary --size 4x5
+node scripts/count-solutions.js 200 --summary --size 5x4
+node scripts/count-solutions.js 200 --summary --size 4x6
+node scripts/count-solutions.js 200 --summary --size 6x4
+
+Results
+-------
+
+4x5
+---
+
+size=4x5
+tilings=454
+runs=200
+min=1
+median=4
+mean=8.51
+max=127
+histogram=1:35,2:34,3:22,4:29,5:8,6:9,7:6,8:15,9:5,10:3,11:2,12:4,13:1,15:4,16:5,17:1,19:2,20:2,21:2,23:1,24:1,31:1,34:1,44:1,68:1,90:1,91:1,95:1,98:1,127:1
+
+5x4
+---
+
+size=5x4
+tilings=454
+runs=200
+min=1
+median=3
+mean=8.38
+max=117
+histogram=1:42,2:32,3:28,4:22,5:7,6:13,7:5,8:8,9:4,10:5,11:1,12:5,13:2,14:3,15:1,16:4,18:1,19:1,20:1,22:1,24:1,28:4,29:1,32:1,54:1,59:1,87:1,92:1,99:2,117:1
+
+4x6
+---
+
+size=4x6
+tilings=2003
+runs=200
+min=1
+median=6
+mean=13.32
+max=192
+histogram=1:18,2:27,3:13,4:30,5:8,6:17,7:2,8:8,9:4,10:7,11:5,12:15,13:1,14:2,15:2,16:8,18:2,19:2,20:4,21:2,23:1,24:2,27:3,31:1,32:1,35:1,39:1,44:1,48:2,49:1,52:1,69:1,79:1,80:1,96:1,102:1,148:1,182:1,192:1
+
+6x4
+---
+
+size=6x4
+tilings=2003
+runs=200
+min=1
+median=6
+mean=11.49
+max=185
+histogram=1:24,2:26,3:23,4:20,5:7,6:16,7:3,8:18,9:6,10:6,11:3,12:7,14:1,15:1,16:5,17:3,18:3,19:1,20:6,21:1,23:1,24:1,25:1,27:2,28:2,30:1,32:1,35:1,44:1,48:2,52:1,61:1,108:1,110:1,118:1,120:1,185:1
+
+Quick Observations
+------------------
+
+- Larger boards have a wider tail of high-solution boards.
+- In this run, 5x4 was slightly better than 4x5 on median and unique-count.
+- In this run, 6x4 was slightly better than 4x6 on mean and unique-count.
+- Rejection sampling with a <= 2 solution threshold should still be feasible, but
+  the acceptance rate drops as the board grows.
