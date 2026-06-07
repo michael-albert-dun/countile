@@ -91,13 +91,14 @@ async function startGame() {
   try {
     const urlLoadResult = loadPuzzleFromUrl();
 
-    // Startup precedence is URL puzzle, URL generation settings, stored session, intro.
+    // Startup precedence is URL puzzle, URL generation settings, stored session, generated puzzle.
     if (urlLoadResult === "generate") {
       await loadTilingDataForSize(state.rows, state.cols);
       generatePuzzle();
       updateAddressBar();
     } else if (!urlLoadResult && !restoreStoredPuzzle()) {
-      showIntro();
+      await loadTilingDataForSize(state.rows, state.cols);
+      generatePuzzle();
     }
 
     syncSettingsControls();
@@ -1980,10 +1981,6 @@ function hasMiddleValuesBetweenEnds(values) {
     values.slice(1, values.length - 1).every((value) => (
       Number(value) > low && Number(value) < high
     ));
-}
-
-function sequenceSum(values) {
-  return values.reduce((total, value) => total + Number(value), 0);
 }
 
 function modeBoardSizes(pieceSize = state?.pieceSize || DEFAULT_PIECE_SIZE) {

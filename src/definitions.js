@@ -10,6 +10,11 @@ const SOLUTION_MULTIPLIER_INVERSES = {
   7: 3,
   9: 9
 };
+
+function sequenceSum(values) {
+  return values.reduce((total, value) => total + Number(value), 0);
+}
+
 const RULESETS = {
   nondecreasing: {
     label: "Nondecreasing",
